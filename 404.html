@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Page Not Found | Juris Global Legal Solutions</title>
+<meta name="robots" content="noindex, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .error-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+  }
+  .error-blob {
+    position: absolute;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(201,152,58,0.08) 0%, transparent 60%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .error-content {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+  }
+  .error-code {
+    font-size: 8rem;
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 0 10px 30px rgba(201,152,58,0.2);
+  }
+  .error-title {
+    font-size: 2.5rem;
+    font-family: 'Playfair Display', serif;
+    color: var(--txt-h);
+    margin-bottom: 1rem;
+  }
+  .error-desc {
+    font-size: 1.1rem;
+    color: var(--txt-s);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+  }
+  .error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body class="theme-slate">
+
+<div class="error-section">
+  <div class="error-blob"></div>
+  <div class="error-content">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Objection Sustained. Page Not Found.</h1>
+    <p class="error-desc">The page you are looking for has been moved, removed, or is currently out of our jurisdiction. Please check the URL or return to our homepage.</p>
+    <div class="error-actions">
+      <a href="index.html" class="btn-primary" style="display:inline-flex;">Return to Homepage ➔</a>
+      <a href="contact.html" class="btn-ghost" style="display:inline-flex;">Contact Support</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+

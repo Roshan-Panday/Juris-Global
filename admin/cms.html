@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Dashboard — Juris Global</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<script type="module" src="../assets/js/firebase-db.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #0a0e17; --bg2: #0f1623; --surface: #141c2e;
+    --border: rgba(255,255,255,0.08); --accent: #8b6f47;
+    --txt: #e2e8f0; --txt-s: #94a3b8; --red: #ef4444; --green: #22c55e;
+  }
+  body { display:flex; margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--txt); height:100vh; overflow:hidden; }
+  
+  /* SIDEBAR */
+  .sidebar { width:240px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sb-header { padding:1.5rem 1.25rem; border-bottom:1px solid var(--border); }
+  .sb-logo { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--txt); line-height:1.3; }
+  .sb-logo span { color:var(--accent); }
+  .sb-user { font-size:0.72rem; color:var(--txt-s); margin-top:0.5rem; text-transform:uppercase; letter-spacing:1px; }
+  .sb-nav { flex:1; padding:1rem 0; overflow-y:auto; }
+  .sb-group { font-size:0.65rem; color:var(--txt-s); text-transform:uppercase; letter-spacing:1.5px; padding:1rem 1.25rem 0.4rem; }
+  .sb-item { padding:0.75rem 1.25rem; display:flex; align-items:center; gap:0.6rem; cursor:pointer; color:var(--txt-s); transition:0.2s; border-left:3px solid transparent; font-size:0.88rem; }
+  .sb-item:hover { background:rgba(255,255,255,0.03); color:var(--txt); }
+  .sb-item.active { background:rgba(139,111,71,0.1); border-left-color:var(--accent); color:var(--accent); }
+  .sb-item.admin-only { display:none; }
+  .sb-footer { padding:1rem 1.25rem; border-top:1px solid var(--border); }
+  .btn-logout { background:none; border:1px solid var(--red); color:var(--red); cursor:pointer; font-family:'Inter'; padding:0.5rem 1rem; border-radius:6px; font-size:0.8rem; width:100%; transition:0.2s; }
+  .btn-logout:hover { background:var(--red); color:#fff; }
+
+  /* MAIN */
+  .main-content { flex:1; padding:2rem; overflow-y:auto; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  .page-title { font-family:'Playfair Display',serif; font-size:1.8rem; margin:0 0 0.5rem; }
+  .page-sub { color:var(--txt-s); font-size:0.88rem; margin:0 0 2rem; }
+
+  /* CARDS */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; }
+  .card h3 { margin:0 0 1.25rem; font-size:1rem; font-weight:600; color:var(--txt); display:flex; align-items:center; gap:0.5rem; }
+
+  /* FORM INPUTS */
+  input[type=text], input[type=email], input[type=url], input[type=tel], select, textarea {
+    width:100%; padding:0.7rem 0.9rem; background:var(--bg2); border:1px solid var(--border);
+    color:var(--txt); border-radius:8px; font-family:'Inter'; font-size:0.88rem; outline:none; transition:0.2s;
+    margin-bottom:0;
+  }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(139,111,71,0.15); }
+  label { font-size:0.78rem; color:var(--txt-s); display:block; margin-bottom:0.35rem; font-weight:500; }
+  .form-group { margin-bottom:1rem; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+  
+  /* BUTTONS */
+  .btn { padding:0.65rem 1.25rem; border-radius:8px; cursor:pointer; font-family:'Inter'; font-size:0.85rem; font-weight:500; border:none; transition:0.2s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { opacity:0.85; }
+  .btn-danger { background:transparent; color:var(--red); border:1px solid var(--red); }
+  .btn-danger:hover { background:var(--red); color:#fff; }
+  .btn-ghost { background:transparent; color:var(--txt-s); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* DATA TABLE */
+  .data-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  .data-table th { text-align:left; padding:0.75rem 1rem; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--txt-s); border-bottom:1px solid var(--border); }
+  .data-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .td-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; }
+
+  /* BADGE */
+  .badge { display:inline-block; padding:0.25rem 0.6rem; border-radius:100px; font-size:0.7rem; font-weight:600; }
+  .badge-green { background:rgba(34,197,94,0.15); color:var(--green); }
+  .badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+  .badge-gold { background:rgba(139,111,71,0.2); color:var(--accent); }
+
+  /* PHOTO UPLOAD */
+  .photo-upload-wrap { width:100px; height:100px; border-radius:50%; border:2px dashed var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; overflow:hidden; background:var(--bg2); position:relative; }
+  .photo-upload-wrap:hover { border-color:var(--accent); }
+  .photo-upload-wrap img { width:100%; height:100%; object-fit:cover; display:none; }
+  .photo-upload-text { font-size:0.7rem; color:var(--txt-s); text-align:center; padding:0.5rem; }
+  input[type=file] { display:none; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:0.3s; }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; width:90%; max-width:600px; max-height:80vh; overflow-y:auto; transform:scale(0.95); transition:0.3s; }
+  .modal-overlay.open .modal { transform:scale(1); }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+  .modal-header h3 { margin:0; font-family:'Playfair Display',serif; }
+  .modal-close { background:none; border:none; color:var(--txt-s); cursor:pointer; font-size:1.3rem; }
+
+  /* MSG */
+  .msg { padding:0.6rem 1rem; border-radius:8px; font-size:0.83rem; margin-top:0.75rem; display:none; }
+  .msg.success { background:rgba(34,197,94,0.1); color:var(--green); border:1px solid rgba(34,197,94,0.2); display:block; }
+  .msg.error { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); display:block; }
+
+  /* QUILL OVERRIDE */
+  .ql-toolbar { background:#1e2535 !important; border-color:var(--border) !important; border-radius:8px 8px 0 0; }
+  .ql-container { background:#ffffff !important; border-color:var(--border) !important; border-radius:0 0 8px 8px; height:280px; }
+</style>
+</head>
+<body class="theme-slate">
+
+<!-- LOADER -->
+<div id="jg-loader" role="status">
+  <div class="loader-icon">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="31" y="8" width="2" height="40" rx="1" fill="currentColor"/>
+      <rect x="10" y="14" width="44" height="2.5" rx="1.25" fill="currentColor"/>
+      <line x1="14" y1="16.5" x2="14" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="20" y1="16.5" x2="20" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="44" y1="16.5" x2="44" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="50" y1="16.5" x2="50" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M11 30 Q17 36 23 30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M41 30 Q47 36 53 30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <rect x="25" y="48" width="14" height="3" rx="1.5" fill="currentColor"/>
+      <circle cx="32" cy="9" r="3" fill="currentColor"/>
+    </svg>
+  </div>
+  <div class="loader-firm-name">Juris Global<br><span>Legal Solutions</span></div>
+  <div class="loader-tagline">Advocates &amp; Legal Consultants</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">Juris Global<br><span>CMS Dashboard</span></div>
+    <div class="sb-user" id="current-user-disp">Loading...</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-group">Content</div>
+    <div class="sb-item active" onclick="switchTab('tab-blog', this)">📝 Blog Posts</div>
+    <div class="sb-item admin-only" onclick="switchTab('tab-team', this)">👥 Team Members</div>
+    <div class="sb-group admin-only">Settings</div>
+    <div class="sb-item admin-only" onclick="switchTab('tab-settings', this)">⚙️ Global Settings</div>
+    <div class="sb-item admin-only" onclick="switchTab('tab-users', this)">🛡️ User Accounts</div>
+  </div>
+  <div class="sb-footer">
+    <a href="../index.html" style="display:block; text-align:center; font-size:0.8rem; color:var(--txt-s); margin-bottom:0.75rem; text-decoration:none;">← View Website</a>
+    <button class="btn-logout" onclick="Auth.logout()">Logout</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+  <!-- ─── BLOG TAB ─── -->
+  <div id="tab-blog" class="tab-content active">
+    <h1 class="page-title">Blog Posts</h1>
+    <p class="page-sub">Create, edit, and publish articles from here. All changes reflect on the public blog page.</p>
+
+    <div class="card">
+      <h3>📋 Existing Posts</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="blog-list-body">
+          <tr><td colspan="6" style="text-align:center; color:var(--txt-s); padding:2rem">Loading posts...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 id="blog-form-title">✏️ Write New Post</h3>
+      <input type="hidden" id="blog-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Post Title *</label>
+          <input type="text" id="blog-title" placeholder="e.g. Understanding NRI Property Rights">
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <input type="text" id="blog-category" placeholder="e.g. NRI Law, Criminal Law">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Author Name</label>
+          <input type="text" id="blog-author" placeholder="e.g. Mr. Vishal, Managing Partner">
+        </div>
+        <div class="form-group">
+          <label>Hero Image URL</label>
+          <input type="url" id="blog-hero" placeholder="https://images.unsplash.com/...">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Article Content</label>
+          <div id="editor-container"></div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:1rem;">
+        <div class="form-group">
+          <label>Excerpt (auto-generated if blank)</label>
+          <textarea id="blog-excerpt" rows="2" placeholder="Short summary shown on the blog card..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Publication Status</label>
+          <select id="blog-status" style="width:100%; padding:0.6rem 1rem; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--txt); font-size:0.9rem;">
+            <option value="true">✅ Published — Visible on public blog</option>
+            <option value="false">📝 Draft — Hidden from public</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:1rem; margin-top:1.25rem; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="publishBlogPost()">💾 Save Post</button>
+        <button class="btn btn-ghost" id="blog-cancel-btn" onclick="cancelBlogEdit()" style="display:none">Cancel Edit</button>
+        <div class="msg" id="blog-msg"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ─── TEAM TAB ─── -->
+  <div id="tab-team" class="tab-content">
+    <h1 class="page-title">Team Members</h1>
+    <p class="page-sub">Add, edit, and remove team members. Profile photos and details will display on the public Team page.</p>
+
+    <div class="card">
+      <h3>👥 Current Team</h3>
+      <table class="data-table" id="team-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="team-list-body">
+          <tr><td colspan="4" style="text-align:center; color:var(--txt-s); padding:2rem">Loading team...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 id="team-form-title">➕ Add New Team Member</h3>
+      <input type="hidden" id="tm-edit-id">
+      <div style="display:flex; gap:1.5rem; align-items:flex-start; margin-bottom:1.5rem;">
+        <div>
+          <label>Profile Photo</label>
+          <label for="tm-photo-file">
+            <div class="photo-upload-wrap" id="tm-photo-wrap">
+              <img id="tm-photo-preview" alt="preview">
+              <div id="tm-upload-placeholder" style="text-align:center">
+                <div style="font-size:1.5rem">📷</div>
+                <div class="photo-upload-text">Click to upload<br>(or paste URL below)</div>
+              </div>
+            </div>
+          </label>
+          <input type="file" id="tm-photo-file" accept="image/*" onchange="previewTeamPhoto(this)">
+        </div>
+        <div style="flex:1;">
+          <div class="form-group">
+            <label>Photo URL (alternative to upload)</label>
+            <input type="url" id="tm-photo-url" placeholder="https://images.unsplash.com/..." oninput="previewPhotoUrl(this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="tm-name" placeholder="e.g. Mr. Vinay Dubey">
+        </div>
+        <div class="form-group">
+          <label>Role / Title *</label>
+          <input type="text" id="tm-role" placeholder="e.g. Senior Counsel & Founding Member">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tagline</label>
+          <input type="text" id="tm-tagline" placeholder="e.g. 25+ years · Constitutional Law">
+        </div>
+        <div class="form-group">
+          <label>Enrollment Number</label>
+          <input type="text" id="tm-enrollment" placeholder="e.g. Bar Council of Delhi — D/XXXX/1999">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Short Bio</label>
+        <textarea id="tm-desc" rows="3" placeholder="Brief description of expertise and background..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Key Benches / Courts</label>
+          <input type="text" id="tm-benches" placeholder="e.g. Supreme Court, Delhi HC">
+        </div>
+        <div class="form-group">
+          <label>Specialization Tags (comma separated)</label>
+          <input type="text" id="tm-tags" placeholder="e.g. NRI Law,Property,Criminal">
+        </div>
+      </div>
+      <div style="display:flex; gap:1rem; margin-top:1rem;">
+        <button class="btn btn-primary" onclick="saveTeamMember()">💾 Save Member</button>
+        <button class="btn btn-ghost" id="tm-cancel-btn" onclick="cancelTeamEdit()" style="display:none">Cancel</button>
+        <div class="msg" id="team-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SETTINGS TAB ─── -->
+  <div id="tab-settings" class="tab-content">
+    <h1 class="page-title">Global Settings</h1>
+    <p class="page-sub">Changes here update the phone, email, and address across the entire website.</p>
+
+    <div class="card">
+      <h3>📞 Contact Information</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Main Phone / WhatsApp</label>
+          <input type="tel" id="firm-phone" placeholder="+91 89201 41417">
+        </div>
+        <div class="form-group">
+          <label>General Email</label>
+          <input type="email" id="firm-email" placeholder="info@jurisgloballegalsolution.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Office Address</label>
+        <textarea id="firm-address" rows="2" placeholder="Chamber No. [XX], Lawyers Chambers..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveFirmSettings()">Save & Publish</button>
+      <div class="msg" id="settings-msg"></div>
+    </div>
+  </div>
+
+  <!-- ─── USERS TAB ─── -->
+  <div id="tab-users" class="tab-content admin-only">
+    <h1 class="page-title">User Accounts</h1>
+    <p class="page-sub">Manage who can access this CMS. Requires Firebase Authentication to be fully enabled.</p>
+
+    <div class="card">
+      <h3>🛡️ CMS Users</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="new-username" placeholder="admin">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="text" id="new-password" placeholder="securepassword">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="new-role">
+          <option value="editor">Editor (Blog only)</option>
+          <option value="admin">Admin (Full access)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="handleCreateUser()">Create User</button>
+      <div class="msg" id="user-msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>📋 Existing Users</h3>
+      <div id="users-list" class="data-list"></div>
+    </div>
+  </div>
+
+
+  <!-- ─── HERO IMAGES TAB ─── -->
+  <div id="tab-hero" class="tab-content admin-only">
+    <h1 class="page-title">Hero Images</h1>
+    <p class="page-sub">Set the background image for each page. Paste a public image URL (e.g. from Unsplash). Changes go live globally for all visitors.</p>
+
+    <div class="card">
+      <h3>🖼️ Page Hero Images</h3>
+      <div id="hero-fields">
+        <div class="form-group">
+          <label>🏠 Home Page Hero</label>
+          <input type="url" id="hero-index" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>👥 Team Page Hero</label>
+          <input type="url" id="hero-team" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>📝 Blog Page Hero</label>
+          <input type="url" id="hero-blog" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>💼 Careers Page Hero</label>
+          <input type="url" id="hero-careers" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>📞 Contact Page Hero</label>
+          <input type="url" id="hero-contact" placeholder="https://images.unsplash.com/...">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveHeroImages()" style="margin-top:0.5rem">💾 Save All Hero Images</button>
+      <div class="msg" id="hero-msg"></div>
+    </div>
+  </div>
+
+  <!-- ─── SEO TAB ─── -->
+  <div id="tab-seo" class="tab-content admin-only">
+    <h1 class="page-title">SEO & Meta Tags</h1>
+    <p class="page-sub">Control what Google and social media shows for each page. Changes are applied live via JavaScript on page load.</p>
+
+    <div id="seo-pages">
+    </div>
+
+    <div class="card" style="max-width:700px;">
+      <h3>⚙️ Edit Page Metadata</h3>
+      <div class="form-group">
+        <label>Page</label>
+        <select id="seo-page-select" onchange="loadSeoFields(this.value)">
+          <option value="index">Home (index)</option>
+          <option value="team">Our Team</option>
+          <option value="blog">Blog</option>
+          <option value="careers">Careers</option>
+          <option value="contact">Contact</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Page Title (appears in browser tab &amp; Google)</label>
+        <input type="text" id="seo-title" placeholder="e.g. Juris Global Legal Solutions — Expert NRI Lawyers">
+      </div>
+      <div class="form-group">
+        <label>Meta Description (shown in Google search results)</label>
+        <textarea id="seo-desc" rows="3" placeholder="e.g. Pan-India advocates specializing in NRI property, matrimonial, criminal and succession law..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Keywords (comma separated)</label>
+        <input type="text" id="seo-keywords" placeholder="e.g. NRI lawyers India, property dispute Delhi, divorce lawyer">
+      </div>
+      <button class="btn btn-primary" onclick="saveSeoMeta()">Save Meta for This Page</button>
+      <div class="msg" id="seo-msg"></div>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+
+<script src="../assets/js/content.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+// ── AUTH GUARD ──
+Auth.requireAuth(['admin', 'editor']);
+const currentUser = Auth.getCurrentUser();
+document.getElementById('current-user-disp').textContent = `${currentUser.role.toUpperCase()} · ${currentUser.username}`;
+
+// Show admin-only items for admins
+if (currentUser.role === 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+}
+
+// ── TAB SWITCHING ──
+function switchTab(tabId, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── QUILL EDITOR ──
+const quill = new Quill('#editor-container', {
+  theme: 'snow',
+  modules: {
+    toolbar: [
+      [{ header: [2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      ['clean']
+    ]
+  }
+});
+
+// ── TEAM PHOTO PREVIEW ──
+let teamPhotoData = null;
+
+function previewTeamPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { alert('File too large (max 3 MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    teamPhotoData = e.target.result;
+    showPhotoPreview(teamPhotoData);
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewPhotoUrl(url) {
+  if (url) {
+    teamPhotoData = url;
+    showPhotoPreview(url);
+  }
+}
+
+function showPhotoPreview(src) {
+  const img = document.getElementById('tm-photo-preview');
+  const placeholder = document.getElementById('tm-upload-placeholder');
+  img.src = src;
+  img.style.display = 'block';
+  placeholder.style.display = 'none';
+}
+
+// ── TEAM MANAGEMENT ──
+const DEFAULT_MEMBERS = [
+  { id:'vd-001', name:'Mr. Vinay Dubey', role:'Senior Counsel & Founding Member', tagline:'25+ years · Constitutional Law · Supreme Court', desc:'Founding advisor with 25+ years of litigation history. Specializes in complex constitutional writ petitions, public interest litigation, property settlement advisory, and Supreme Court appeals.', benches:'Supreme Court of India, Delhi HC, Allahabad HC', enrollment:'Bar Council of Delhi — D/XXXX/1999', tags:'Constitutional Law,PIL,Property,Supreme Court', photo:'' },
+  { id:'v-002', name:'Mr. Vishal', role:'Managing Partner & Lead Counsel', tagline:'17+ years · NRI Specialist · High Courts', desc:'Managing partner with 17+ years of experience. Focuses on NRI legal services, property disputes, cross-border matrimonial settlements, succession planning, and High Court writ matters.', benches:'Supreme Court, Delhi HC, Punjab & Haryana HC', enrollment:'Bar Council of Delhi — D/YYYY/2008', tags:'NRI Law,Property,Matrimonial,High Court', photo:'' },
+  { id:'gy-003', name:'Mr. Gautam Yadav', role:'Partner & Head of Trial Litigation', tagline:'10+ years · Criminal Law · District Courts', desc:'Trial court expert with 10+ years experience. Heads criminal defense representation, bail proceedings, cheque bounce matters, and commercial/SARFAESI debt recovery trials.', benches:'District Courts Delhi NCR, NCLT, DRT, RERA', enrollment:'Bar Council of Delhi — D/ZZZZ/2014', tags:'Criminal Law,Bail,SARFAESI,RERA', photo:'' }
+];
+
+function getTeamMembers() {
+  try {
+    const s = localStorage.getItem('juris_team_members');
+    return s ? JSON.parse(s) : DEFAULT_MEMBERS;
+  } catch { return DEFAULT_MEMBERS; }
+}
+
+function saveTeamLocally(members) {
+  localStorage.setItem('juris_team_members', JSON.stringify(members));
+}
+
+function getInitials(name) {
+  return name.split(' ').filter(w => /[A-Za-z]/.test(w[0])).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'JG';
+}
+
+function renderTeamTable() {
+  const members = getTeamMembers();
+  const tbody = document.getElementById('team-list-body');
+  if (!members.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--txt-s);padding:2rem">No team members yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = members.map(m => `
+    <tr>
+      <td>
+        ${m.photo
+          ? `<img src="${m.photo}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
+          : `<div style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem">${getInitials(m.name)}</div>`}
+      </td>
+      <td style="font-weight:500">${m.name}</td>
+      <td style="color:var(--txt-s);font-size:0.82rem">${m.role}</td>
+      <td>
+        <button class="btn btn-ghost" onclick="editTeamMember('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.78rem;margin-right:0.5rem">✏️ Edit</button>
+        <button class="btn btn-danger" onclick="deleteTeamMember('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.78rem">🗑️ Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editTeamMember(id) {
+  const m = getTeamMembers().find(m => m.id === id);
+  if (!m) return;
+  document.getElementById('tm-edit-id').value = m.id;
+  document.getElementById('tm-name').value = m.name || '';
+  document.getElementById('tm-role').value = m.role || '';
+  document.getElementById('tm-tagline').value = m.tagline || '';
+  document.getElementById('tm-desc').value = m.desc || '';
+  document.getElementById('tm-benches').value = m.benches || '';
+  document.getElementById('tm-enrollment').value = m.enrollment || '';
+  document.getElementById('tm-tags').value = m.tags || '';
+  document.getElementById('tm-photo-url').value = m.photo || '';
+  if (m.photo) { teamPhotoData = m.photo; showPhotoPreview(m.photo); }
+  document.getElementById('team-form-title').textContent = '✏️ Edit Member: ' + m.name;
+  document.getElementById('tm-cancel-btn').style.display = '';
+  document.getElementById('team-form-title').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteTeamMember(id) {
+  if (!confirm('Remove this team member? This cannot be undone.')) return;
+  const members = getTeamMembers().filter(m => m.id !== id);
+  saveTeamLocally(members);
+  saveTeamToFirebase(members);
+  renderTeamTable();
+  showMsg('team-msg', 'Member removed.', 'success');
+}
+
+async function saveTeamMember() {
+  const name = document.getElementById('tm-name').value.trim();
+  const role = document.getElementById('tm-role').value.trim();
+  if (!name || !role) { showMsg('team-msg', 'Name and Role are required.', 'error'); return; }
+
+  const editId = document.getElementById('tm-edit-id').value;
+  const member = {
+    id: editId || ('tm-' + Date.now()),
+    name,
+    role,
+    tagline: document.getElementById('tm-tagline').value.trim(),
+    desc: document.getElementById('tm-desc').value.trim(),
+    benches: document.getElementById('tm-benches').value.trim(),
+    enrollment: document.getElementById('tm-enrollment').value.trim(),
+    tags: document.getElementById('tm-tags').value.trim(),
+    photo: teamPhotoData || document.getElementById('tm-photo-url').value.trim() || ''
+  };
+
+  let members = getTeamMembers();
+  if (editId) {
+    members = members.map(m => m.id === editId ? member : m);
+  } else {
+    members.push(member);
+  }
+
+  saveTeamLocally(members);
+  await saveTeamToFirebase(members);
+  renderTeamTable();
+  cancelTeamEdit();
+  showMsg('team-msg', editId ? 'Member updated successfully!' : 'New member added!', 'success');
+}
+
+async function saveTeamToFirebase(members) {
+  if (!window.FirebaseDB) return;
+  try {
+    const docRef = window.FirebaseDB.doc(window.FirebaseDB.db, 'settings', 'teamMembers');
+    await window.FirebaseDB.setDoc(docRef, { members }, { merge: true });
+  } catch(e) { console.warn('Firebase team save failed:', e.message); }
+}
+
+function cancelTeamEdit() {
+  document.getElementById('tm-edit-id').value = '';
+  document.getElementById('tm-name').value = '';
+  document.getElementById('tm-role').value = '';
+  document.getElementById('tm-tagline').value = '';
+  document.getElementById('tm-desc').value = '';
+  document.getElementById('tm-benches').value = '';
+  document.getElementById('tm-enrollment').value = '';
+  document.getElementById('tm-tags').value = '';
+  document.getElementById('tm-photo-url').value = '';
+  document.getElementById('tm-photo-preview').style.display = 'none';
+  document.getElementById('tm-upload-placeholder').style.display = '';
+  teamPhotoData = null;
+  document.getElementById('team-form-title').textContent = '➕ Add New Team Member';
+  document.getElementById('tm-cancel-btn').style.display = 'none';
+}
+
+// ── BLOG MANAGEMENT ──
+function getBlogPosts() {
+  if (window.SITE_CONTENT && window.SITE_CONTENT.blog) return window.SITE_CONTENT.blog;
+  return [];
+}
+
+function renderBlogTable() {
+  const posts = getBlogPosts();
+  const tbody = document.getElementById('blog-list-body');
+  if (!posts.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--txt-s);padding:2rem">No posts yet. Write your first post below!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = posts.map(p => `
+    <tr>
+      <td style="font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</td>
+      <td style="font-size:0.82rem;color:var(--txt-s)">${(p.author || '').split(',')[0]}</td>
+      <td><span class="badge badge-gold">${p.category || '—'}</span></td>
+      <td style="font-size:0.82rem;color:var(--txt-s)">${p.date || '—'}</td>
+      <td><span class="badge ${p.published ? 'badge-green' : 'badge-red'}">${p.published ? 'Published' : 'Draft'}</span></td>
+      <td>
+        <button class="btn btn-ghost" onclick="editBlogPost('${p.id}')" style="padding:0.4rem 0.8rem;font-size:0.78rem;margin-right:0.5rem">✏️ Edit</button>
+        <button class="btn btn-danger" onclick="deleteBlogPost('${p.id}')" style="padding:0.4rem 0.8rem;font-size:0.78rem">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editBlogPost(id) {
+  const post = getBlogPosts().find(p => p.id === id);
+  if (!post) return;
+  document.getElementById('blog-edit-id').value = post.id;
+  document.getElementById('blog-title').value = post.title || '';
+  document.getElementById('blog-category').value = post.category || '';
+  document.getElementById('blog-author').value = post.author || '';
+  document.getElementById('blog-hero').value = post.image || '';
+  quill.root.innerHTML = post.content || post.excerpt || '';
+  document.getElementById('blog-form-title').textContent = '✏️ Editing: ' + post.title;
+  document.getElementById('blog-cancel-btn').style.display = '';
+  document.getElementById('blog-form-title').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelBlogEdit() {
+  document.getElementById('blog-edit-id').value = '';
+  document.getElementById('blog-title').value = '';
+  document.getElementById('blog-category').value = '';
+  document.getElementById('blog-author').value = '';
+  document.getElementById('blog-hero').value = '';
+  quill.root.innerHTML = '';
+  document.getElementById('blog-form-title').textContent = '✏️ Write New Post';
+  document.getElementById('blog-cancel-btn').style.display = 'none';
+}
+
+async function deleteBlogPost(id) {
+  if (!confirm('Delete this post permanently?')) return;
+  let posts = getBlogPosts().filter(p => p.id !== id);
+  window.SITE_CONTENT.blog = posts;
+  await saveBlogsToFirebase(posts);
+  renderBlogTable();
+  showMsg('blog-msg', 'Post deleted.', 'success');
+}
+
+async function publishBlogPost() {
+  const title = document.getElementById('blog-title').value.trim();
+  const category = document.getElementById('blog-category').value.trim();
+  if (!title) { showMsg('blog-msg', 'Title is required.', 'error'); return; }
+
+  const editId = document.getElementById('blog-edit-id').value;
+  const contentHTML = quill.root.innerHTML;
+  const isPublished = document.getElementById('blog-status').value === 'true';
+  const manualExcerpt = document.getElementById('blog-excerpt') ? document.getElementById('blog-excerpt').value.trim() : '';
+
+  const post = {
+    id: editId || ('blog-' + Date.now()),
+    title,
+    category: category || 'General',
+    author: document.getElementById('blog-author').value.trim() || 'Juris Global',
+    date: new Date().toISOString().split('T')[0],
+    readTime: Math.max(1, Math.ceil(quill.getText().split(' ').length / 200)) + ' min',
+    image: document.getElementById('blog-hero').value.trim() || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80',
+    excerpt: manualExcerpt || (quill.getText().substring(0, 180).trim() + '...'),
+    content: contentHTML,
+    published: isPublished
+  };
+
+  let posts = getBlogPosts();
+  if (editId) {
+    posts = posts.map(p => p.id === editId ? post : p);
+  } else {
+    posts = [post, ...posts];
+  }
+  window.SITE_CONTENT.blog = posts;
+  await saveBlogsToFirebase(posts);
+  renderBlogTable();
+  cancelBlogEdit();
+  showMsg('blog-msg', isPublished ? (editId ? 'Post updated & published!' : 'Post published!') : 'Post saved as draft.', 'success');
+
+}
+
+async function saveBlogsToFirebase(posts) {
+  if (!window.FirebaseDB) return;
+  try {
+    const docRef = window.FirebaseDB.doc(window.FirebaseDB.db, 'settings', 'blogs');
+    await window.FirebaseDB.setDoc(docRef, { posts }, { merge: true });
+  } catch(e) { console.warn('Firebase blog save:', e.message); }
+}
+
+// ── FIRM SETTINGS ──
+window.addEventListener('firebaseDataReady', () => {
+  if (window.SITE_CONTENT && window.SITE_CONTENT.firm) {
+    document.getElementById('firm-phone').value = window.SITE_CONTENT.firm.phone || '';
+    document.getElementById('firm-email').value = window.SITE_CONTENT.firm.email || '';
+    document.getElementById('firm-address').value = window.SITE_CONTENT.firm.address || '';
+  }
+  renderBlogTable();
+  renderTeamTable();
+  renderUsersList();
+});
+
+async function saveFirmSettings() {
+  const phone = document.getElementById('firm-phone').value.trim();
+  const email = document.getElementById('firm-email').value.trim();
+  const address = document.getElementById('firm-address').value.trim();
+  if (!window.FirebaseDB) { showMsg('settings-msg', 'Firebase not connected.', 'error'); return; }
+  try {
+    const docRef = window.FirebaseDB.doc(window.FirebaseDB.db, 'settings', 'firmInfo');
+    await window.FirebaseDB.setDoc(docRef, { phone, email, address }, { merge: true });
+    showMsg('settings-msg', 'Global settings saved! Refresh the website to see changes.', 'success');
+  } catch(e) {
+    showMsg('settings-msg', 'Error: ' + e.message, 'error');
+  }
+}
+
+// ── USER MANAGEMENT ──
+function renderUsersList() {
+  try {
+    const users = JSON.parse(localStorage.getItem('juris_cms_users') || '[]');
+    const el = document.getElementById('users-list');
+    if (!users.length) { el.innerHTML = '<p style="padding:1rem;color:var(--txt-s);font-size:0.85rem">No users yet.</p>'; return; }
+    el.innerHTML = users.map(u => `
+      <div class="data-row">
+        <div>
+          <div style="font-weight:500">${u.username}</div>
+          <div style="font-size:0.78rem;color:var(--txt-s)">${u.role}</div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteUser('${u.username}')" style="padding:0.35rem 0.75rem;font-size:0.78rem">Remove</button>
+      </div>
+    `).join('');
+  } catch{}
+}
+
+function handleCreateUser() {
+  const u = document.getElementById('new-username').value.trim();
+  const p = document.getElementById('new-password').value.trim();
+  const r = document.getElementById('new-role').value;
+  if (!u || !p) { showMsg('user-msg', 'Username and password required.', 'error'); return; }
+  if (typeof Auth !== 'undefined' && Auth.createUser) {
+    const ok = Auth.createUser(u, p, r);
+    if (ok) {
+      showMsg('user-msg', `User "${u}" created as ${r}.`, 'success');
+      renderUsersList();
+    } else {
+      showMsg('user-msg', 'Username already exists.', 'error');
+    }
+  }
+}
+
+function deleteUser(username) {
+  if (!confirm(`Remove user "${username}"?`)) return;
+  let users = JSON.parse(localStorage.getItem('juris_cms_users') || '[]');
+  users = users.filter(u => u.username !== username);
+  localStorage.setItem('juris_cms_users', JSON.stringify(users));
+  renderUsersList();
+}
+
+// ── UTILITIES ──
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  setTimeout(() => { el.className = 'msg'; }, 4000);
+}
+
+
+  // ── HERO IMAGES ──
+  window.addEventListener('firebaseDataReady', () => {
+    if (window.HERO_IMAGES) {
+      const pages = ['index','team','blog','careers','contact'];
+      pages.forEach(p => {
+        const el = document.getElementById('hero-' + p);
+        if (el && window.HERO_IMAGES[p]) el.value = window.HERO_IMAGES[p];
+      });
+    }
+    if (window.SITE_META) {
+      loadSeoFields(document.getElementById('seo-page-select').value);
+    }
+  });
+
+  async function saveHeroImages() {
+    if (!window.FirebaseDB) { showMsg('hero-msg', 'Firebase not connected.', 'error'); return; }
+    const pages = ['index','team','blog','careers','contact'];
+    const data = {};
+    pages.forEach(p => {
+      const val = document.getElementById('hero-' + p).value.trim();
+      if (val) data[p] = val;
+    });
+    try {
+      const docRef = window.FirebaseDB.doc(window.FirebaseDB.db, 'settings', 'heroImages');
+      await window.FirebaseDB.setDoc(docRef, data, { merge: true });
+      showMsg('hero-msg', 'Hero images saved! All pages updated.', 'success');
+    } catch(e) { showMsg('hero-msg', 'Error: ' + e.message, 'error'); }
+  }
+
+  // ── SEO META ──
+  window.SITE_META = window.SITE_META || {};
+
+  function loadSeoFields(page) {
+    const meta = (window.SITE_META || {})[page] || {};
+    document.getElementById('seo-title').value = meta.title || '';
+    document.getElementById('seo-desc').value = meta.description || '';
+    document.getElementById('seo-keywords').value = meta.keywords || '';
+  }
+
+  async function saveSeoMeta() {
+    if (!window.FirebaseDB) { showMsg('seo-msg', 'Firebase not connected.', 'error'); return; }
+    const page = document.getElementById('seo-page-select').value;
+    window.SITE_META = window.SITE_META || {};
+    window.SITE_META[page] = {
+      title: document.getElementById('seo-title').value.trim(),
+      description: document.getElementById('seo-desc').value.trim(),
+      keywords: document.getElementById('seo-keywords').value.trim(),
+    };
+    try {
+      const docRef = window.FirebaseDB.doc(window.FirebaseDB.db, 'settings', 'siteMeta');
+      await window.FirebaseDB.setDoc(docRef, window.SITE_META, { merge: true });
+      showMsg('seo-msg', 'Meta saved for ' + page + ' page!', 'success');
+    } catch(e) { showMsg('seo-msg', 'Error: ' + e.message, 'error'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSeoFields('index');
+  });
+
+  // Init on page load with local data
+renderBlogTable();
+renderTeamTable();
+renderUsersList();
+</script>
+</body>
+</html>
+

@@ -1,0 +1,292 @@
+
+/* ================================================================
+   JURIS GLOBAL — PREMIUM PAGE LOADER
+   ================================================================ */
+#jg-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #050e1e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#jg-loader.hide {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+/* Scales of justice SVG animation */
+.loader-icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.loader-icon svg {
+  width: 100%;
+  height: 100%;
+  color: #C9983A;
+  animation: scaleRock 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(201, 152, 58, 0.5));
+}
+@keyframes scaleRock {
+  0%   { transform: rotate(-6deg); }
+  50%  { transform: rotate(6deg); }
+  100% { transform: rotate(-6deg); }
+}
+
+/* Firm name text animation */
+.loader-firm-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+}
+.loader-firm-name span {
+  color: #E8B84B;
+  font-style: italic;
+}
+.loader-tagline {
+  font-size: clamp(0.6rem, 2.5vw, 0.72rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: -1rem;
+}
+
+/* Progress bar */
+.loader-bar-wrap {
+  width: min(260px, 70vw);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.loader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #C9983A, #E8B84B, #C9983A);
+  background-size: 200% 100%;
+  border-radius: 99px;
+  width: 0%;
+  animation: loadProgress 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+             shimmer 1.5s linear infinite;
+}
+@keyframes loadProgress {
+  0%   { width: 0%; }
+  60%  { width: 80%; }
+  100% { width: 100%; }
+}
+@keyframes shimmer {
+  0%   { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ================================================================
+   NAV LOGO — HOVER EFFECT (Premium shimmer + glow)
+   ================================================================ */
+.nav-logo {
+  cursor: default;
+  position: relative;
+  transition: all 0.35s ease;
+}
+.nav-logo::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #E8B84B, transparent);
+  transition: width 0.45s ease;
+}
+.nav-logo:hover {
+  text-shadow: 0 0 20px rgba(232, 184, 75, 0.5);
+  letter-spacing: 0.06em;
+}
+.nav-logo:hover::after {
+  width: 100%;
+}
+.nav-logo:hover span {
+  color: #fff;
+  text-shadow: 0 0 16px rgba(232, 184, 75, 0.8);
+}
+
+/* ================================================================
+   HERO — FULL MOBILE FIX
+   ================================================================ */
+@media (max-width: 900px) {
+  /* ── Hero ── */
+  .hero-section {
+    min-height: 100svh; /* safe viewport height for mobile browsers */
+    height: auto;
+  }
+  .hero-content {
+    padding: 5rem 1.25rem 7rem;
+    text-align: center;
+  }
+  .hero-badge {
+    justify-content: center;
+  }
+  .hero-ctas {
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .btn-hero-primary, .btn-hero-ghost {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+  }
+  .hero-stats {
+    justify-content: center;
+    gap: 1rem;
+  }
+  .hs-divider { display: none; }
+  .hs-num { font-size: 1.6rem; }
+  .hero-dots {
+    right: 1rem;
+    bottom: 5rem;
+  }
+  .hero-justice-silhouette { display: none; }
+  .hero-scroll-hint { display: none; }
+
+  /* ── Courts Strip ── */
+  .cs-inner {
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
+  .cs-label { font-size: 0.58rem; }
+  .cs-logo-item { font-size: 0.72rem; padding: 0.25rem 0.6rem; }
+
+  /* ── About ── */
+  .about-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem;
+  }
+  .about-right { order: -1; }
+  .about-img { height: 260px !important; }
+  .about-img-badge {
+    bottom: 1rem;
+    left: 1rem;
+    padding: 0.75rem 1rem;
+  }
+  .aib-num { font-size: 2rem; }
+
+  /* ── Practice Areas (Bento) ── */
+  .bento-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .bento-card.featured {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* ── NRI Section ── */
+  .nri-inner {
+    grid-template-columns: 1fr !important;
+    gap: 2rem;
+  }
+  .nri-features {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Courts Grid ── */
+  .courts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Blog Grid ── */
+  .blog-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Team Grid ── */
+  .team-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem;
+  }
+
+  /* ── Judgment Row ── */
+  .judgment-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Contact Section ── */
+  .contact-inner {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem;
+  }
+
+  /* ── Footer ── */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem;
+  }
+
+  /* ── General Sections ── */
+  .section-w {
+    padding: 0 1.25rem;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+  }
+  .section-sub {
+    font-size: 0.88rem;
+  }
+
+  /* ── Navbar ── */
+  .nav-links { display: none !important; }
+  .hamburger { display: flex !important; }
+  .navbar { padding: 0 1.25rem; }
+  .nav-logo { font-size: 1rem; }
+  
+  /* ── Judgment row ── */
+  .judgment-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-title {
+    font-size: clamp(1.9rem, 8vw, 2.5rem) !important;
+  }
+}
+
+/* Fix horizontal overflow globally */
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+img, video, iframe {
+  max-width: 100%;
+}
+
+/* ── MOBILE STICKY BAR — Make "WHATSA..." not cut off ── */
+@media (max-width: 768px) {
+  .mobile-sticky-bar {
+    display: flex !important;
+  }
+  .msb-btn {
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+}

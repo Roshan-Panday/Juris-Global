@@ -1,0 +1,65 @@
+/* PREMIUM SUB-PAGE HERO — changeable image, auto-fit/crop, rich overlay */
+.page-hero {
+  position: relative;
+  min-height: 420px;
+  height: 52vh;
+  max-height: 560px;
+  width: 100%;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  /* navbar: top:1rem(16px) + height:64px + contact block buffer = ~110px total */
+  padding-top: calc(1rem + 64px + 2.5rem);
+  box-sizing: border-box;
+}
+.page-hero-bg-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(160deg,rgba(5,10,22,0.93) 0%,rgba(8,14,28,0.5) 45%,rgba(5,10,22,0.9) 100%);
+}
+.page-hero-gold-line {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px; z-index: 3;
+  background: linear-gradient(90deg, transparent, #c9983a 30%, #e8c56a 50%, #c9983a 70%, transparent);
+}
+.page-hero-inner {
+  position: relative; z-index: 2;
+  padding: 2rem 5% 2.5rem;
+  width: 100%; max-width: 1280px; margin: 0 auto;
+}
+.ph-breadcrumb {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.72rem; color: rgba(255,255,255,0.45);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem;
+}
+.ph-breadcrumb a { color: rgba(201,152,58,0.85); text-decoration: none; }
+.ph-breadcrumb span { color: rgba(255,255,255,0.2); }
+.ph-label {
+  display: inline-block;
+  background: rgba(201,152,58,0.12); border: 1px solid rgba(201,152,58,0.3);
+  color: #c9983a; font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 0.28rem 0.9rem; border-radius: 20px; margin-bottom: 1rem;
+}
+.ph-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  font-weight: 800; color: #fff; line-height: 1.1;
+  margin: 0 0 0.75rem; text-shadow: 0 2px 30px rgba(0,0,0,0.4);
+}
+.ph-title em { font-style: italic; color: #c9983a; }
+.ph-sub { font-size: 1rem; color: rgba(255,255,255,0.62); max-width: 560px; line-height: 1.65; }
+@media (max-width: 768px) {
+  .page-hero { min-height: 320px; height: auto; padding-top: calc(1rem + 64px + 1.5rem); }
+  .ph-title { font-size: 2rem; }
+  .ph-sub { font-size: 0.88rem; }
+}
+
+/* NRI sticky sidebar fix */
+.nri-layout { display: grid; grid-template-columns: 1fr 340px; gap: 3rem; align-items: start; max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+.nri-sticky { position: sticky; top: 100px; }
+@media (max-width: 900px) {
+  .nri-layout { grid-template-columns: 1fr; }
+  .nri-sticky { position: static; }
+}
